@@ -158,7 +158,6 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 })
 
-var port = ":5000"
 var origin = "https://lupus-yonderboy.github.io/lupus-yonderboy"
 
 func Start() {
@@ -176,7 +175,12 @@ func Start() {
 	mux.Handle("/posts", Posts)
 	mux.Handle("/authors", Authors)
 
-	log.Fatal(http.ListenAndServe(port, handler))
+  port := os.Getenv("PORT")
+  if port == "" {
+    port = "5000"
+  }
+
+	log.Fatal(http.ListenAndServe(":" + port, handler))
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
