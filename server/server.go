@@ -9,7 +9,7 @@ import (
 	"github.com/rs/cors"
 )
 
-var port = ":" + os.Getenv("PORT")
+var port = ":5000"
 var origin = os.Getenv("ORIGIN")
 
 func Start() {
