@@ -17,11 +17,11 @@ import (
 var DB *sql.DB
 
 var (
-	host     = os.Getenv("RDS_HOSTNAME")
+	host       = os.Getenv("RDS_HOSTNAME")
 	dbPort, _  = strconv.ParseUint(os.Getenv("RDS_PORT"), 10, 64)
-	dbname   = os.Getenv("RDS_DB_NAME")
-	user     = os.Getenv("RDS_USERNAME")
-	password = os.Getenv("RDS_PASSWORD")
+	dbname     = os.Getenv("RDS_DB_NAME")
+	user       = os.Getenv("RDS_USERNAME")
+	password   = os.Getenv("RDS_PASSWORD")
 )
 
 func Connect() {
