@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-  "github.com/rs/cors"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 // types
@@ -20,7 +20,7 @@ type Post struct {
 	Id          uint      // 1
 	Title       string    // 2
 	DateCreated time.Time // 3
-  DateUpdated time.Time // 4
+	DateUpdated time.Time // 4
 	ShortTitle  string    // 5
 	Content     string    // 6
 	Author      uint      // 7
@@ -31,7 +31,7 @@ type Author struct {
 	Id          uint      // 1
 	Name        string    // 2
 	DateCreated time.Time // 3
-  DateUpdated time.Time // 4
+	DateUpdated time.Time // 4
 	Bio         string    // 5
 	Image       uint      // 6
 }
@@ -120,16 +120,16 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-  case "POST":
-    author := &Author{}
+	case "POST":
+		author := &Author{}
 
-    err := json.NewDecoder(r.Body).Decode(author)
-    if err != nil {
-      w.WriteHeader(http.StatusBadRequest)
-      return
-    }
+		err := json.NewDecoder(r.Body).Decode(author)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-    query := `
+		query := `
         INSERT INTO authors (
                               -- 1
           name,               -- 2
@@ -152,18 +152,18 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
           image               -- 6
       `
 
-    rows, err = DB.Query(query,
-                    // 1
-      author.Name,  // 2 -- $1
-                    // 3
-                    // 4
-      author.Bio,   // 5 -- $2
-      author.Image, // 6 -- $3
-    )
-    if err != nil {
-      w.WriteHeader(http.StatusBadRequest)
-      return
-    }
+		rows, err = DB.Query(query,
+			// 1
+			author.Name, // 2 -- $1
+			// 3
+			// 4
+			author.Bio,   // 5 -- $2
+			author.Image, // 6 -- $3
+		)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	} // close switch
 
 	for rows.Next() {
@@ -178,7 +178,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			&Id,          // 1
 			&Name,        // 2
 			&DateCreated, // 3
-      &DateUpdated, // 4
+			&DateUpdated, // 4
 			&Bio,         // 5
 			&Image,       // 6
 		)
@@ -187,7 +187,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Id:          Id,          // 1
 			Name:        Name,        // 2
 			DateCreated: DateCreated, // 3
-      DateUpdated: DateUpdated, // 4
+			DateUpdated: DateUpdated, // 4
 			Bio:         Bio,         // 5
 			Image:       Image,       // 6
 		})
@@ -260,14 +260,14 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       `
 
 		rows, err = DB.Query(query,
-			                  // 1
-			post.Title,       // 2 -- $1
-			                  // 3
-                        // 4
-			post.ShortTitle,  // 5 -- $2
-			post.Content,     // 6 -- $3
-			post.Author,      // 7 -- $4
-			post.Image,       // 8 -- $5
+			// 1
+			post.Title, // 2 -- $1
+			// 3
+			// 4
+			post.ShortTitle, // 5 -- $2
+			post.Content,    // 6 -- $3
+			post.Author,     // 7 -- $4
+			post.Image,      // 8 -- $5
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -279,7 +279,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var Id uint               // 1
 		var Title string          // 2
 		var DateCreated time.Time // 3
-    var DateUpdated time.Time // 4
+		var DateUpdated time.Time // 4
 		var ShortTitle string     // 5
 		var Content string        // 6
 		var Author uint           // 7
@@ -289,7 +289,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			&Id,          // 1
 			&Title,       // 2
 			&DateCreated, // 3
-      &DateUpdated, // 4
+			&DateUpdated, // 4
 			&ShortTitle,  // 5
 			&Content,     // 6
 			&Author,      // 7
@@ -300,7 +300,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Id:          Id,          // 1
 			Title:       Title,       // 2
 			DateCreated: DateCreated, // 3
-      DateUpdated: DateUpdated, // 4
+			DateUpdated: DateUpdated, // 4
 			ShortTitle:  ShortTitle,  // 5
 			Content:     Content,     // 6
 			Author:      Author,      // 7
