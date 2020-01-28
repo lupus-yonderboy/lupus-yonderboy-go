@@ -116,7 +116,7 @@ func Start() {
 		AllowedOrigins:   []string{origin},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet},
-		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type"},
+		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
 	})
 
 	handler := c.Handler(mux)
