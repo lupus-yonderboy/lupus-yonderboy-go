@@ -10,42 +10,30 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/lib/pq"
-	"github.com/rs/cors"
+  "github.com/rs/cors"
+	_ "github.com/lib/pq"
 )
 
 // types
 
-type NullTime struct {
-	pq.NullTime
-}
-
-type NullString struct {
-	sql.NullString
-}
-
-type NullInt64 struct {
-	sql.NullInt64
-}
-
 type Post struct {
-	Id          uint
-	Title       string
-	DateCreated time.Time
-	ShortTitle  NullString
-	Content     NullString
-	Author      uint
-	Image       NullInt64
-	DateUpdated NullTime
+	Id          uint      // 1
+	Title       string    // 2
+	DateCreated time.Time // 3
+  DateUpdated time.Time // 4
+	ShortTitle  string    // 5
+	Content     string    // 6
+	Author      uint      // 7
+	Image       uint      // 8
 }
 
 type Author struct {
 	Id          uint
 	Name        string
 	DateCreated time.Time
-	Bio         NullString
-	Image       NullInt64
-	DateUpdated NullTime
+  DateUpdated time.Time
+	Bio         string
+	Image       uint
 }
 
 // database
@@ -120,9 +108,9 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         SELECT id,           -- 1
                name,         -- 2
                date_created, -- 3
-               bio,          -- 4
-               image         -- 5
-               date_updated, -- 6
+               date_updated, -- 4
+               bio,          -- 5
+               image         -- 6
         FROM authors
       `
 
@@ -137,26 +125,26 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var Id uint               // 1
 		var Name string           // 2
 		var DateCreated time.Time // 3
-		var Bio NullString        // 4
-		var Image NullInt64       // 5
-		var DateUpdated NullTime  // 6
+		var DateUpdated time.Time // 4
+		var Bio string            // 5
+		var Image uint            // 6
 
 		rows.Scan(
 			&Id,          // 1
 			&Name,        // 2
 			&DateCreated, // 3
-			&Bio,         // 4
-			&Image,       // 5
-			&DateUpdated, // 6
+      &DateUpdated, // 4
+			&Bio,         // 5
+			&Image,       // 6
 		)
 
 		authors = append(authors, Author{
 			Id:          Id,          // 1
 			Name:        Name,        // 2
 			DateCreated: DateCreated, // 3
-			Bio:         Bio,         // 4
-			Image:       Image,       // 5
-			DateUpdated: DateUpdated, // 6
+      DateUpdated: DateUpdated, // 4
+			Bio:         Bio,         // 5
+			Image:       Image,       // 6
 		})
 	}
 
@@ -174,11 +162,11 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         SELECT id,           -- 1
                title,        -- 2
                date_created, -- 3
-               short_title,  -- 4
-               content,      -- 5
-               author,       -- 6
-               image,        -- 7
-               date_updated  -- 8
+               date_updated, -- 4
+               short_title,  -- 5
+               content,      -- 6
+               author,       -- 7
+               image         -- 8
         FROM posts
       `
 
@@ -202,42 +190,43 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
                               -- 1
           title,              -- 2
           date_created,       -- 3
-          short_title,        -- 4
-          content,            -- 5
-          author,             -- 6
-          image               -- 7
-                              -- 8
+          date_updated,       -- 4
+          short_title,        -- 5
+          content,            -- 6
+          author,             -- 7
+          image               -- 8
         ) VALUES (
                               -- 1
           $1,                 -- 2
-          $2,                 -- 3
-          now(),              -- 4
-          COALESCE($3, NULL), -- 5
-          COALESCE($4, NULL), -- 6
-          $5,                 -- 7
-          $6                  -- 8
+          current_timestamp,  -- 3
+          current_timestamp,  -- 4
+          $2,                 -- 5
+          $3,                 -- 6
+          $4,                 -- 7
+          $5                  -- 8
         ) RETURNING id,       -- 1
           title,              -- 2
           date_created,       -- 3
-          short_title,        -- 4
-          content,            -- 5
-          author,             -- 6
-          image,              -- 7
-          date_updated        -- 8
+          date_updated,       -- 4
+          short_title,        -- 5
+          content,            -- 6
+          author,             -- 7
+          image               -- 8
       `
 
 		rows, err = DB.Query(query,
-			                 // 1
-			post.Title,      // 2
-			post.ShortTitle, // 3
-			                 // 4
-			post.Content,    // 5
-			post.Author,     // 6
-			post.Image,      // 7
-
+			                  // 1
+			post.Title,       // 2 -- $1
+			                  // 3
+                        // 4
+			post.ShortTitle,  // 5 -- $2
+			post.Content,     // 6 -- $3
+			post.Author,      // 7 -- $4
+			post.Image,       // 8 -- $5
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
+      fmt.Println(err)
 			return
 		}
 	} // close switch
@@ -246,32 +235,32 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var Id uint               // 1
 		var Title string          // 2
 		var DateCreated time.Time // 3
-		var ShortTitle NullString // 4
-		var Content NullString    // 5
-		var Author uint           // 6
-		var Image NullInt64       // 7
-		var DateUpdated NullTime  // 8
+    var DateUpdated time.Time // 4
+		var ShortTitle string     // 5
+		var Content string        // 6
+		var Author uint           // 7
+		var Image uint            // 8
 
 		rows.Scan(
 			&Id,          // 1
 			&Title,       // 2
 			&DateCreated, // 3
-			&ShortTitle,  // 4
-			&Content,     // 5
-			&Author,      // 6
-			&Image,       // 7
-			&DateUpdated, // 8
+      &DateUpdated, // 4
+			&ShortTitle,  // 5
+			&Content,     // 6
+			&Author,      // 7
+			&Image,       // 8
 		)
 
 		posts = append(posts, Post{
 			Id:          Id,          // 1
 			Title:       Title,       // 2
 			DateCreated: DateCreated, // 3
-			ShortTitle:  ShortTitle,  // 4
-			Content:     Content,     // 5
-			Author:      Author,      // 6
-			Image:       Image,       // 7
-			DateUpdated: DateUpdated, // 8
+      DateUpdated: DateUpdated, // 4
+			ShortTitle:  ShortTitle,  // 5
+			Content:     Content,     // 6
+			Author:      Author,      // 7
+			Image:       Image,       // 8
 		})
 	}
 
