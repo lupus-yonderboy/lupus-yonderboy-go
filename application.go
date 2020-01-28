@@ -189,7 +189,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
-		post := &Post
+		post := &Post{}
 
 		err := json.NewDecoder(r.Body).Decode(post)
 		if err != nil {
@@ -227,13 +227,13 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       `
 
 		rows, err = DB.Query(query,
-			// 1
-			post.title,       // 2
-			post.short_title, // 3
-			// 4
-			post.content, // 5
-			post.author,  // 6
-			post.image,   // 7
+			                 // 1
+			post.Title,      // 2
+			post.ShortTitle, // 3
+			                 // 4
+			post.Content,    // 5
+			post.Author,     // 6
+			post.Image,      // 7
 
 		)
 		if err != nil {
