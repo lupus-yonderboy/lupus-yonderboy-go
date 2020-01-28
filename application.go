@@ -108,7 +108,7 @@ func Connect() {
 // *****************************************************************************
 
 func Start() {
-	origin := "https://lupus-yonderboy.github.io"
+	origin := "https://lupus-yonderboy.github.io/lupus-yonderboy/"
 
 	mux := http.NewServeMux()
 
