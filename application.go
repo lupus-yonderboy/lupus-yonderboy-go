@@ -108,14 +108,12 @@ func Connect() {
 // *****************************************************************************
 
 func Start() {
-	origin := "https://lupus-yonderboy.github.io"
-
 	mux := http.NewServeMux()
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{origin},
+		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
 		AllowCredentials: true,
-		AllowedMethods:   []string{http.MethodGet},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
 		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
 	})
 
