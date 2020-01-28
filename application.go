@@ -14,7 +14,9 @@ import (
 	"github.com/rs/cors"
 )
 
-// types
+// *****************************************************************************
+// ****** TYPES ****************************************************************
+// *****************************************************************************
 
 type Post struct {
 	Id          uint      // 1
@@ -36,7 +38,43 @@ type Author struct {
 	Image       uint      // 6
 }
 
-// database
+// *****************************************************************************
+// ****** SCHEMA ***************************************************************
+// *****************************************************************************
+
+// CREATE TABLE posts (
+//   id SERIAL PRIMARY KEY,             -- 1
+//   title VARCHAR NOT NULL,            -- 2
+//   date_created TIMESTAMPTZ NOT NULL, -- 3
+//   date_updated TIMESTAMPTZ,          -- 4
+//   short_title VARCHAR,               -- 5
+//   content TEXT,                      -- 6
+//   author INTEGER NOT NULL,           -- 7
+//   image INTEGER                      -- 8
+// );
+
+// CREATE TABLE authors (
+//   id SERIAL PRIMARY KEY,             -- 1
+//   name VARCHAR NOT NULL,             -- 2
+//   date_created TIMESTAMPTZ NOT NULL, -- 3
+//   date_updated TIMESTAMPTZ,          -- 4
+//   bio VARCHAR,                       -- 5
+//   image INTEGER                      -- 6
+// );
+
+// CREATE TABLE images (
+//   id SERIAL PRIMARY KEY,             -- 1
+//   title VARCHAR NOT NULL,            -- 2
+//   url VARCHAR NOT NULL,              -- 3
+//   date_created TIMESTAMPTZ NOT NULL, -- 4
+//   date_updated TIMESTAMPTZ,          -- 5
+//   description VARCHAR,               -- 6
+//   link VARCHAR                       -- 7
+// );
+
+// *****************************************************************************
+// ****** DATABASE *************************************************************
+// *****************************************************************************
 
 var DB *sql.DB
 
@@ -65,7 +103,9 @@ func Connect() {
 	}
 }
 
-// server
+// *****************************************************************************
+// ****** SERVER ***************************************************************
+// *****************************************************************************
 
 func Start() {
 	origin := "https://lupus-yonderboy.github.io/lupus-yonderboy"
@@ -97,6 +137,10 @@ var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode("Hi.")
 })
+
+// *****************************************************************************
+// ****** AUTHORS **************************************************************
+// *****************************************************************************
 
 var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var authors []Author
@@ -131,32 +175,33 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
         INSERT INTO authors (
-                              -- 1
-          name,               -- 2
-          date_created,       -- 3
-          date_updated,       -- 4
-          bio,                -- 5
-          image               -- 6
+                             -- 1
+          name,              -- 2
+          date_created,      -- 3
+          date_updated,      -- 4
+          bio,               -- 5
+          image              -- 6
         ) VALUES (
-                              -- 1
-          $1,                 -- 2
-          current_timestamp,  -- 3
-          current_timestamp,  -- 4
-          $2,                 -- 5
-          $3                  -- 6
-        ) RETURNING id,       -- 1
-          name,               -- 2
-          date_created,       -- 3
-          date_updated,       -- 4
-          bio,                -- 5
-          image               -- 6
+                             -- 1
+          $1,                -- 2
+          current_timestamp, -- 3
+          current_timestamp, -- 4
+          $2,                -- 5
+          $3                 -- 6
+        ) RETURNING
+          id,                -- 1
+          name,              -- 2
+          date_created,      -- 3
+          date_updated,      -- 4
+          bio,               -- 5
+          image              -- 6
       `
 
 		rows, err = DB.Query(query,
-			// 1
-			author.Name, // 2 -- $1
-			// 3
-			// 4
+              		  // 1
+			author.Name,  // 2 -- $1
+              		  // 3
+              		  // 4
 			author.Bio,   // 5 -- $2
 			author.Image, // 6 -- $3
 		)
@@ -197,6 +242,10 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(authors)
 })
 
+// *****************************************************************************
+// ****** POSTS ****************************************************************
+// *****************************************************************************
+
 var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	var rows *sql.Rows
@@ -232,38 +281,39 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
         INSERT INTO posts (
-                              -- 1
-          title,              -- 2
-          date_created,       -- 3
-          date_updated,       -- 4
-          short_title,        -- 5
-          content,            -- 6
-          author,             -- 7
-          image               -- 8
+                             -- 1
+          title,             -- 2
+          date_created,      -- 3
+          date_updated,      -- 4
+          short_title,       -- 5
+          content,           -- 6
+          author,            -- 7
+          image              -- 8
         ) VALUES (
-                              -- 1
-          $1,                 -- 2
-          current_timestamp,  -- 3
-          current_timestamp,  -- 4
-          $2,                 -- 5
-          $3,                 -- 6
-          $4,                 -- 7
-          $5                  -- 8
-        ) RETURNING id,       -- 1
-          title,              -- 2
-          date_created,       -- 3
-          date_updated,       -- 4
-          short_title,        -- 5
-          content,            -- 6
-          author,             -- 7
-          image               -- 8
+                             -- 1
+          $1,                -- 2
+          current_timestamp, -- 3
+          current_timestamp, -- 4
+          $2,                -- 5
+          $3,                -- 6
+          $4,                -- 7
+          $5                 -- 8
+        ) RETURNING
+          id,                -- 1
+          title,             -- 2
+          date_created,      -- 3
+          date_updated,      -- 4
+          short_title,       -- 5
+          content,           -- 6
+          author,            -- 7
+          image              -- 8
       `
 
 		rows, err = DB.Query(query,
-			// 1
-			post.Title, // 2 -- $1
-			// 3
-			// 4
+			                 // 1
+			post.Title,      // 2 -- $1
+                  		 // 3
+                  		 // 4
 			post.ShortTitle, // 5 -- $2
 			post.Content,    // 6 -- $3
 			post.Author,     // 7 -- $4
@@ -312,7 +362,9 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 })
 
-// main
+// *****************************************************************************
+// ****** MAIN *****************************************************************
+// *****************************************************************************
 
 func main() {
 	Connect()
