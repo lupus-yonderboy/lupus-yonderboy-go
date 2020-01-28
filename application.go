@@ -28,12 +28,12 @@ type Post struct {
 }
 
 type Author struct {
-	Id          uint
-	Name        string
-	DateCreated time.Time
-  DateUpdated time.Time
-	Bio         string
-	Image       uint
+	Id          uint      // 1
+	Name        string    // 2
+	DateCreated time.Time // 3
+  DateUpdated time.Time // 4
+	Bio         string    // 5
+	Image       uint      // 6
 }
 
 // database
@@ -119,7 +119,52 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-	}
+
+  case "POST":
+    author := &Author{}
+
+    err := json.NewDecoder(r.Body).Decode(author)
+    if err != nil {
+      w.WriteHeader(http.StatusBadRequest)
+      return
+    }
+
+    query := `
+        INSERT INTO authors (
+                              -- 1
+          name,               -- 2
+          date_created,       -- 3
+          date_updated,       -- 4
+          bio,                -- 5
+          image               -- 6
+        ) VALUES (
+                              -- 1
+          $1,                 -- 2
+          current_timestamp,  -- 3
+          current_timestamp,  -- 4
+          $2,                 -- 5
+          $3                  -- 6
+        ) RETURNING id,       -- 1
+          name,               -- 2
+          date_created,       -- 3
+          date_updated,       -- 4
+          bio,                -- 5
+          image               -- 6
+      `
+
+    rows, err = DB.Query(query,
+                    // 1
+      author.Name,  // 2 -- $1
+                    // 3
+                    // 4
+      author.Bio,   // 5 -- $2
+      author.Image, // 6 -- $3
+    )
+    if err != nil {
+      w.WriteHeader(http.StatusBadRequest)
+      return
+    }
+	} // close switch
 
 	for rows.Next() {
 		var Id uint               // 1
@@ -226,7 +271,6 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-      fmt.Println(err)
 			return
 		}
 	} // close switch
