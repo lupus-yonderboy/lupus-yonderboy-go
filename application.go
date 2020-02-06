@@ -114,7 +114,7 @@ func Start() {
 		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type"},
+		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
 	})
 
 	handler := c.Handler(mux)
@@ -128,7 +128,7 @@ func Start() {
 		port = "5000"
 	}
 
-	log.Fatal(http.ListenAndServeTLS(":"+port, os.Getenv("CERT"), os.Getenv("PRIV_KEY"), handler))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
