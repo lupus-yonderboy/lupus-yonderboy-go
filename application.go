@@ -11,7 +11,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/rs/cors"
+	// "github.com/rs/cors"
 )
 
 // *****************************************************************************
@@ -108,27 +108,27 @@ func Connect() {
 // *****************************************************************************
 
 func Start() {
-	mux := http.NewServeMux()
+	// mux := http.NewServeMux()
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
-		AllowCredentials: true,
-		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
-	})
+	// c := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
+	// 	AllowCredentials: true,
+	// 	AllowedMethods:   []string{http.MethodGet, http.MethodPost},
+	// 	AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type"},
+	// })
+	//
+	// handler := c.Handler(mux)
 
-	handler := c.Handler(mux)
+	http.Handle("/", root)
+	http.Handle("/posts", Posts)
+	http.Handle("/authors", Authors)
 
-	mux.Handle("/", root)
-	mux.Handle("/posts", Posts)
-	mux.Handle("/authors", Authors)
+	// port := os.Getenv("PORT")
+	// if port == "" {
+	// 	port = "5000"
+	// }
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "5000"
-	}
-
-	log.Fatal(http.ListenAndServe(":"+port, handler))
+	log.Fatal(http.ListenAndServeTLS(":443", os.Getenv("CERT"), os.Getenv("PRIV_KEY"), nil))
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
