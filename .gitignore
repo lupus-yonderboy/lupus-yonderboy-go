@@ -1,4 +1,5 @@
 notes
+*.pem
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
