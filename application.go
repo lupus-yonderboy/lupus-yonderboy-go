@@ -111,7 +111,7 @@ func Start() {
 	mux := http.NewServeMux()
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io", "http://localhost:3000"},
+		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
 		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
