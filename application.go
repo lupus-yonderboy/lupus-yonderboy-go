@@ -127,9 +127,11 @@ func Start() {
 	if port == "" {
 		port = "5000"
 	}
+
 	cert := os.Getenv("CERT")
 	privKey := os.Getenv("PRIV_KEY")
 
+	// log.Fatal(http.ListenAndServe(":"+port, handler))
 	log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
 }
 
