@@ -129,13 +129,8 @@ func Start() {
 	}
 	cert := os.Getenv("CERT")
 	privKey := os.Getenv("PRIV_KEY")
-	env := os.Getenv("ENV")
 
-	if env == "development" {
-		log.Fatal(http.ListenAndServe(":"+port, handler))
-	} else {
-		log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
-	}
+	log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
