@@ -111,7 +111,7 @@ func Start() {
 	mux := http.NewServeMux()
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
+		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io", "http://localhost:3000"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
 		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
@@ -127,12 +127,15 @@ func Start() {
 	if port == "" {
 		port = "5000"
 	}
-
 	cert := os.Getenv("CERT")
 	privKey := os.Getenv("PRIV_KEY")
+	env := os.Getenv("ENV")
 
-	// log.Fatal(http.ListenAndServe(":"+port, handler))
-	log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
+	if env == "development" {
+		log.Fatal(http.ListenAndServe(":"+port, handler))
+	} else {
+		log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
+	}
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
