@@ -20,23 +20,23 @@ import (
 // *****************************************************************************
 
 type Post struct {
-	Id          uint      // 1
-	Title       string    // 2
-	DateCreated time.Time // 3
-	DateUpdated time.Time // 4
-	ShortTitle  string    // 5
-	Content     string    // 6
-	Author      uint      // 7
-	Image       uint      // 8
+	Id          uint
+	Title       string
+	DateCreated time.Time
+	DateUpdated time.Time
+	ShortTitle  string
+	Content     string
+	Author      uint
+	Image       uint
 }
 
 type Author struct {
-	Id          uint      // 1
-	Name        string    // 2
-	DateCreated time.Time // 3
-	DateUpdated time.Time // 4
-	Bio         string    // 5
-	Image       uint      // 6
+	Id          uint
+	Name        string
+	DateCreated time.Time
+	DateUpdated time.Time
+	Bio         string
+	Image       uint
 }
 
 // *****************************************************************************
@@ -44,33 +44,33 @@ type Author struct {
 // *****************************************************************************
 
 // CREATE TABLE posts (
-//   id SERIAL PRIMARY KEY,             -- 1
-//   title VARCHAR NOT NULL,            -- 2
-//   date_created TIMESTAMPTZ NOT NULL, -- 3
-//   date_updated TIMESTAMPTZ,          -- 4
-//   short_title VARCHAR,               -- 5
-//   content TEXT,                      -- 6
-//   author INTEGER NOT NULL,           -- 7
-//   image INTEGER                      -- 8
+//   id SERIAL PRIMARY KEY,
+//   title VARCHAR NOT NULL,
+//   date_created TIMESTAMPTZ NOT NULL,
+//   date_updated TIMESTAMPTZ,
+//   short_title VARCHAR,
+//   content TEXT,
+//   author INTEGER NOT NULL,
+//   image INTEGER
 // );
 
 // CREATE TABLE authors (
-//   id SERIAL PRIMARY KEY,             -- 1
-//   name VARCHAR NOT NULL,             -- 2
-//   date_created TIMESTAMPTZ NOT NULL, -- 3
-//   date_updated TIMESTAMPTZ,          -- 4
-//   bio VARCHAR,                       -- 5
-//   image INTEGER                      -- 6
+//   id SERIAL PRIMARY KEY,
+//   name VARCHAR NOT NULL,
+//   date_created TIMESTAMPTZ NOT NULL,
+//   date_updated TIMESTAMPTZ,
+//   bio VARCHAR,
+//   image INTEGER
 // );
 
 // CREATE TABLE images (
-//   id SERIAL PRIMARY KEY,             -- 1
-//   title VARCHAR NOT NULL,            -- 2
-//   url VARCHAR NOT NULL,              -- 3
-//   date_created TIMESTAMPTZ NOT NULL, -- 4
-//   date_updated TIMESTAMPTZ,          -- 5
-//   description VARCHAR,               -- 6
-//   link VARCHAR                       -- 7
+//   id SERIAL PRIMARY KEY,
+//   title VARCHAR NOT NULL,
+//   url VARCHAR NOT NULL,
+//   date_created TIMESTAMPTZ NOT NULL,
+//   date_updated TIMESTAMPTZ,
+//   description VARCHAR,
+//   link VARCHAR
 // );
 
 // *****************************************************************************
@@ -112,7 +112,7 @@ func Start() {
 	mux := http.NewServeMux()
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
+		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io", "http://localhost:3000"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut},
 		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
@@ -162,12 +162,12 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		query := `
-        SELECT id,           -- 1
-               name,         -- 2
-               date_created, -- 3
-               date_updated, -- 4
-               bio,          -- 5
-               image         -- 6
+        SELECT id,
+               name,
+               date_created,
+               date_updated,
+               bio,
+               image
         FROM authors
       `
 
@@ -188,35 +188,30 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
         INSERT INTO authors (
-                             -- 1
-          name,              -- 2
-          date_created,      -- 3
-          date_updated,      -- 4
-          bio,               -- 5
-          image              -- 6
+          name,
+          date_created,
+          date_updated,
+          bio,
+          image
         ) VALUES (
-                             -- 1
-          $1,                -- 2
-          current_timestamp, -- 3
-          current_timestamp, -- 4
-          $2,                -- 5
-          $3                 -- 6
+          $1,
+          current_timestamp,
+          current_timestamp,
+          $2,
+          $3
         ) RETURNING
-          id,                -- 1
-          name,              -- 2
-          date_created,      -- 3
-          date_updated,      -- 4
-          bio,               -- 5
-          image              -- 6
+          id,
+          name,
+          date_created,
+          date_updated,
+          bio,
+          image
       `
 
 		rows, err = DB.Query(query,
-      //						// 1
-			author.Name,  // 2 -- $1
-      //						// 3
-      //						// 4
-			author.Bio,   // 5 -- $2
-			author.Image, // 6 -- $3
+			author.Name,
+			author.Bio,
+			author.Image,
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -239,32 +234,28 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
 				UPDATE authors
-				SET            				 							-- 1
-					name = COALESCE($1, name),  			-- 2
-							 							 				  			-- 3
-					date_updated = current_timestamp, -- 4
-					bio = COALESCE($2, bio),    			-- 5
-					image = CASE											-- 6
+				SET
+					name = COALESCE($1, name),
+					date_updated = current_timestamp,
+					bio = COALESCE($2, bio),
+					image = CASE
 						WHEN $3 = 0 THEN image
 						ELSE $3
 					END
 				WHERE id = $4 RETURNING
-					id,                								-- 1
-					name,              								-- 2
-					date_created,      								-- 3
-					date_updated,      								-- 4
-					bio,               								-- 5
-					image              								-- 6
+					id,
+					name,
+					date_created,
+					date_updated,
+					bio,
+					image
 			`
 
 		rows, err = DB.Query(query,
-			//						 							// !
-			newNullString(author.Name), // 2 -- $1
-			//						 							// 3
-			//						 							// 4
-			newNullString(author.Bio),  // 5 -- $2
-			author.Image,        				// 6 -- $3
-			paramAuthorId, 							// 1 -- $4
+			newNullString(author.Name),
+			newNullString(author.Bio),
+			author.Image,
+			paramAuthorId,
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -273,29 +264,29 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	} // close switch
 
 	for rows.Next() {
-		var Id uint               // 1
-		var Name string           // 2
-		var DateCreated time.Time // 3
-		var DateUpdated time.Time // 4
-		var Bio string            // 5
-		var Image uint            // 6
+		var Id uint
+		var Name string
+		var DateCreated time.Time
+		var DateUpdated time.Time
+		var Bio string
+		var Image uint
 
 		rows.Scan(
-			&Id,          // 1
-			&Name,        // 2
-			&DateCreated, // 3
-			&DateUpdated, // 4
-			&Bio,         // 5
-			&Image,       // 6
+			&Id,
+			&Name,
+			&DateCreated,
+			&DateUpdated,
+			&Bio,
+			&Image,
 		)
 
 		authors = append(authors, Author{
-			Id:          Id,          // 1
-			Name:        Name,        // 2
-			DateCreated: DateCreated, // 3
-			DateUpdated: DateUpdated, // 4
-			Bio:         Bio,         // 5
-			Image:       Image,       // 6
+			Id:          Id,
+			Name:        Name,
+			DateCreated: DateCreated,
+			DateUpdated: DateUpdated,
+			Bio:         Bio,
+			Image:       Image,
 		})
 	}
 
@@ -318,14 +309,14 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		query := `
-        SELECT id,           -- 1
-               title,        -- 2
-               date_created, -- 3
-               date_updated, -- 4
-               short_title,  -- 5
-               content,      -- 6
-               author,       -- 7
-               image         -- 8
+        SELECT id,
+               title,
+               date_created,
+               date_updated,
+               short_title,
+               content,
+               author,
+               image
         FROM posts
       `
 
@@ -346,43 +337,38 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
         INSERT INTO posts (
-                             -- 1
-          title,             -- 2
-          date_created,      -- 3
-          date_updated,      -- 4
-          short_title,       -- 5
-          content,           -- 6
-          author,            -- 7
-          image              -- 8
+          title,
+          date_created,
+          date_updated,
+          short_title,
+          content,
+          author,
+          image
         ) VALUES (
-                             -- 1
-          $1,                -- 2
-          current_timestamp, -- 3
-          current_timestamp, -- 4
-          $2,                -- 5
-          $3,                -- 6
-          $4,                -- 7
-          $5                 -- 8
+          $1,
+          current_timestamp,
+          current_timestamp,
+          $2,
+          $3,
+          $4,
+          $5
         ) RETURNING
-          id,                -- 1
-          title,             -- 2
-          date_created,      -- 3
-          date_updated,      -- 4
-          short_title,       -- 5
-          content,           -- 6
-          author,            -- 7
-          image              -- 8
+          id,
+          title,
+          date_created,
+          date_updated,
+          short_title,
+          content,
+          author,
+          image
       `
 
 		rows, err = DB.Query(query,
-			//					 	   // 1
-			post.Title,      // 2 -- $1
-      //					 	   // 3
-      //					 	   // 4
-			post.ShortTitle, // 5 -- $2
-			post.Content,    // 6 -- $3
-			post.Author,     // 7 -- $4
-			post.Image,      // 8 -- $5
+			post.Title,
+			post.ShortTitle,
+			post.Content,
+			post.Author,
+			post.Image,
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -405,42 +391,38 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		query := `
 				UPDATE posts
-				SET            				 										 -- 1
-					title = COALESCE($1, title),  					 -- 2
-																									 -- 3
-					date_updated = current_timestamp, 			 -- 4
-					short_title = COALESCE($2, short_title), -- 5
-					content = COALESCE($3, content),    		 -- 6
-					author = CASE														 -- 7
+				SET
+					title = COALESCE($1, title),
+					date_updated = current_timestamp,
+					short_title = COALESCE($2, short_title),
+					content = COALESCE($3, content),
+					author = CASE
 						WHEN $4 = 0 THEN author
 						ELSE $4
 					END,
-					image = CASE														 -- 8
+					image = CASE
 						WHEN $5 = 0 THEN image
 						ELSE $5
 					END
 				WHERE id = $6 RETURNING
-					id,                										 	 -- 1
-					title,              									 	 -- 2
-					date_created,      										 	 -- 3
-					date_updated,      										 	 -- 4
-					short_title,												   	 -- 5
-					content,               								 	 -- 6
-					author,              									 	 -- 7
-					image																	 	 -- 8
+					id,
+					title,
+					date_created,
+					date_updated,
+					short_title,
+					content,
+					author,
+					image
 			`
 
-			rows, err = DB.Query(query,
-				//					 	   									// !
-				newNullString(post.Title),      	// 2 -- $1
-	      //					 	   									// 3
-	      //					 	   									// 4
-				newNullString(post.ShortTitle), 	// 5 -- $2
-				newNullString(post.Content),    	// 6 -- $3
-				post.Author, 											// 7 -- $4
-				post.Image,  											// 8 -- $5
-				paramPostId,		 									// 1 -- $6
-			)
+		rows, err = DB.Query(query,
+			newNullString(post.Title),
+			newNullString(post.ShortTitle),
+			newNullString(post.Content),
+			post.Author,
+			post.Image,
+			paramPostId,
+		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -448,35 +430,35 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	} // close switch
 
 	for rows.Next() {
-		var Id uint               // 1
-		var Title string          // 2
-		var DateCreated time.Time // 3
-		var DateUpdated time.Time // 4
-		var ShortTitle string     // 5
-		var Content string        // 6
-		var Author uint           // 7
-		var Image uint            // 8
+		var Id uint
+		var Title string
+		var DateCreated time.Time
+		var DateUpdated time.Time
+		var ShortTitle string
+		var Content string
+		var Author uint
+		var Image uint
 
 		rows.Scan(
-			&Id,          // 1
-			&Title,       // 2
-			&DateCreated, // 3
-			&DateUpdated, // 4
-			&ShortTitle,  // 5
-			&Content,     // 6
-			&Author,      // 7
-			&Image,       // 8
+			&Id,
+			&Title,
+			&DateCreated,
+			&DateUpdated,
+			&ShortTitle,
+			&Content,
+			&Author,
+			&Image,
 		)
 
 		posts = append(posts, Post{
-			Id:          Id,          // 1
-			Title:       Title,       // 2
-			DateCreated: DateCreated, // 3
-			DateUpdated: DateUpdated, // 4
-			ShortTitle:  ShortTitle,  // 5
-			Content:     Content,     // 6
-			Author:      Author,      // 7
-			Image:       Image,       // 8
+			Id:          Id,
+			Title:       Title,
+			DateCreated: DateCreated,
+			DateUpdated: DateUpdated,
+			ShortTitle:  ShortTitle,
+			Content:     Content,
+			Author:      Author,
+			Image:       Image,
 		})
 	}
 
@@ -492,5 +474,3 @@ func main() {
 	Connect()
 	Start()
 }
-
-// :)
