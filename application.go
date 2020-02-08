@@ -128,11 +128,7 @@ func Start() {
 		port = "5000"
 	}
 
-	cert := os.Getenv("CERT")
-	privKey := os.Getenv("PRIV_KEY")
-
-	// log.Fatal(http.ListenAndServe(":"+port, handler))
-	log.Fatal(http.ListenAndServeTLS(":"+port, cert, privKey, handler))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
 var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
