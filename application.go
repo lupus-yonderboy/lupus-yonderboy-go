@@ -137,6 +137,16 @@ var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 	json.NewEncoder(w).Encode("Hi.")
 })
 
+func newNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
+}
+
 // *****************************************************************************
 // ****** AUTHORS **************************************************************
 // *****************************************************************************
@@ -234,9 +244,11 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 							 							 				  			-- 3
 					date_updated = current_timestamp, -- 4
 					bio = COALESCE($2, bio),    			-- 5
-					image = COALESCE($3, image) 			-- 6
-				WHERE id = $4
-					RETURNING
+					image = CASE											-- 6
+						WHEN $3 = 0 THEN image
+						ELSE $3
+					END
+				WHERE id = $4 RETURNING
 					id,                								-- 1
 					name,              								-- 2
 					date_created,      								-- 3
@@ -246,13 +258,13 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			`
 
 		rows, err = DB.Query(query,
-			//						 // !
-			author.Name,   // 2 -- $1
-			//						 // 3
-			//						 // 4
-			author.Bio,    // 5 -- $2
-			author.Image,  // 6 -- $3
-			paramAuthorId, // 1 -- $4
+			//						 							// !
+			newNullString(author.Name), // 2 -- $1
+			//						 							// 3
+			//						 							// 4
+			newNullString(author.Bio),  // 5 -- $2
+			author.Image,        				// 6 -- $3
+			paramAuthorId, 							// 1 -- $4
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -298,6 +310,10 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	var rows *sql.Rows
+
+	requestPath := r.URL.Path
+	pathSplit := strings.Split(requestPath, "/")
+	paramPostId := pathSplit[2]
 
 	switch r.Method {
 	case "GET":
@@ -368,6 +384,63 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			post.Author,     // 7 -- $4
 			post.Image,      // 8 -- $5
 		)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+	case "PUT":
+		if paramPostId == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		post := &Post{}
+
+		err := json.NewDecoder(r.Body).Decode(post)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		query := `
+				UPDATE posts
+				SET            				 										 -- 1
+					title = COALESCE($1, title),  					 -- 2
+																									 -- 3
+					date_updated = current_timestamp, 			 -- 4
+					short_title = COALESCE($2, short_title), -- 5
+					content = COALESCE($3, content),    		 -- 6
+					author = CASE														 -- 7
+						WHEN $4 = 0 THEN author
+						ELSE $4
+					END,
+					image = CASE														 -- 8
+						WHEN $5 = 0 THEN image
+						ELSE $5
+					END
+				WHERE id = $6 RETURNING
+					id,                										 	 -- 1
+					title,              									 	 -- 2
+					date_created,      										 	 -- 3
+					date_updated,      										 	 -- 4
+					short_title,												   	 -- 5
+					content,               								 	 -- 6
+					author,              									 	 -- 7
+					image																	 	 -- 8
+			`
+
+			rows, err = DB.Query(query,
+				//					 	   									// !
+				newNullString(post.Title),      	// 2 -- $1
+	      //					 	   									// 3
+	      //					 	   									// 4
+				newNullString(post.ShortTitle), 	// 5 -- $2
+				newNullString(post.Content),    	// 6 -- $3
+				post.Author, 											// 7 -- $4
+				post.Image,  											// 8 -- $5
+				paramPostId,		 									// 1 -- $6
+			)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
