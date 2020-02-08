@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -113,15 +114,15 @@ func Start() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io"},
 		AllowCredentials: true,
-		AllowedMethods:   []string{http.MethodGet, http.MethodPost},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut},
 		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
 	})
 
 	handler := c.Handler(mux)
 
 	mux.Handle("/", root)
-	mux.Handle("/posts", Posts)
-	mux.Handle("/authors", Authors)
+	mux.Handle("/posts/", Posts)
+	mux.Handle("/authors/", Authors)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -143,6 +144,10 @@ var root = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var authors []Author
 	var rows *sql.Rows
+
+	requestPath := r.URL.Path
+	pathSplit := strings.Split(requestPath, "/")
+	paramAuthorId := pathSplit[2]
 
 	switch r.Method {
 	case "GET":
@@ -196,12 +201,58 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       `
 
 		rows, err = DB.Query(query,
-              		  // 1
+      //						// 1
 			author.Name,  // 2 -- $1
-              		  // 3
-              		  // 4
+      //						// 3
+      //						// 4
 			author.Bio,   // 5 -- $2
 			author.Image, // 6 -- $3
+		)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+	case "PUT":
+		if paramAuthorId == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		author := &Author{}
+
+		err := json.NewDecoder(r.Body).Decode(author)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		query := `
+				UPDATE authors
+				SET            				 							-- 1
+					name = COALESCE($1, name),  			-- 2
+							 							 				  			-- 3
+					date_updated = current_timestamp, -- 4
+					bio = COALESCE($2, bio),    			-- 5
+					image = COALESCE($3, image) 			-- 6
+				WHERE id = $4
+					RETURNING
+					id,                								-- 1
+					name,              								-- 2
+					date_created,      								-- 3
+					date_updated,      								-- 4
+					bio,               								-- 5
+					image              								-- 6
+			`
+
+		rows, err = DB.Query(query,
+			//						 // !
+			author.Name,   // 2 -- $1
+			//						 // 3
+			//						 // 4
+			author.Bio,    // 5 -- $2
+			author.Image,  // 6 -- $3
+			paramAuthorId, // 1 -- $4
 		)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -308,10 +359,10 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       `
 
 		rows, err = DB.Query(query,
-			                 // 1
+			//					 	   // 1
 			post.Title,      // 2 -- $1
-                  		 // 3
-                  		 // 4
+      //					 	   // 3
+      //					 	   // 4
 			post.ShortTitle, // 5 -- $2
 			post.Content,    // 6 -- $3
 			post.Author,     // 7 -- $4
