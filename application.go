@@ -134,7 +134,7 @@ func Start() {
 	mux.Handle("/", root)
 	mux.Handle("/posts/", Posts)
 	mux.Handle("/authors/", Authors)
-	// mux.Handle("/"+os.Getenv("ONE_TIME"), OneTime)
+	mux.Handle("/"+os.Getenv("ONE_TIME"), OneTime)
 
 	port := os.Getenv("PORT")
 	if port == "" {
