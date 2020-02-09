@@ -171,10 +171,10 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	paramAuthorId := pathSplit[2]
 
 	header := r.Header
-	// var token string
-	// if headerToken, ok := header["Token"]; ok {
-  //   token = headerToken[0]
-	// }
+	var token string
+	if headerToken, ok := header["Token"]; ok {
+    token = headerToken[0]
+	}
 
 	var showArchived string
 	if headerShowArchived, ok := header["Show-Archived"]; ok {
@@ -216,6 +216,11 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
+		if token != os.Getenv("TOKEN") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return;
+		}
+
 		author := &Author{}
 
 		err := json.NewDecoder(r.Body).Decode(author)
@@ -258,6 +263,11 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "PUT":
+		if token != os.Getenv("TOKEN") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return;
+		}
+
 		if paramAuthorId == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -352,10 +362,10 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	paramPostId := pathSplit[2]
 
 	header := r.Header
-	// var token string
-	// if headerToken, ok := header["Token"]; ok {
-	// 	token = headerToken[0]
-	// }
+	var token string
+	if headerToken, ok := header["Token"]; ok {
+		token = headerToken[0]
+	}
 
 	var showArchived string
 	if headerShowArchived, ok := header["Show-Archived"]; ok {
@@ -401,6 +411,11 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "POST":
+		if token != os.Getenv("TOKEN") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return;
+		}
+
 		post := &Post{}
 
 		err := json.NewDecoder(r.Body).Decode(post)
@@ -451,6 +466,11 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "PUT":
+		if token != os.Getenv("TOKEN") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return;
+		}
+
 		if paramPostId == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
