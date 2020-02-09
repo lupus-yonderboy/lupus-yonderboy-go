@@ -126,7 +126,7 @@ func Start() {
 		AllowedOrigins:   []string{"https://lupus-yonderboy.github.io", "http://localhost:3000"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut},
-		AllowedHeaders:   []string{"Token", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
+		AllowedHeaders:   []string{"Token", "Show-Archived", "Host", "User-Agent", "Accept", "Content-Length", "Content-Type", "Origin"},
 	})
 
 	handler := c.Handler(mux)
@@ -170,19 +170,44 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	pathSplit := strings.Split(requestPath, "/")
 	paramAuthorId := pathSplit[2]
 
+	header := r.Header
+	// var token string
+	// if headerToken, ok := header["Token"]; ok {
+  //   token = headerToken[0]
+	// }
+
+	var showArchived string
+	if headerShowArchived, ok := header["Show-Archived"]; ok {
+		showArchived = headerShowArchived[0]
+	}
+
 	switch r.Method {
 	case "GET":
-		query := `
-        SELECT id,
-               name,
-               date_created,
-               date_updated,
-               bio,
-               image,
-							 archived
-        FROM authors
-				WHERE NOT archived
-      `
+		var query string
+		if showArchived == os.Getenv("SHOW_ARCHIVED") {
+			query = `
+					SELECT id,
+								 name,
+								 date_created,
+								 date_updated,
+								 bio,
+								 image,
+								 archived
+					FROM authors
+				`
+		} else {
+			query = `
+					SELECT id,
+								 name,
+								 date_created,
+								 date_updated,
+								 bio,
+								 image,
+								 archived
+					FROM authors
+					WHERE NOT archived
+				`
+		}
 
 		var err error
 		rows, err = DB.Query(query)
@@ -326,21 +351,48 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	pathSplit := strings.Split(requestPath, "/")
 	paramPostId := pathSplit[2]
 
+	header := r.Header
+	// var token string
+	// if headerToken, ok := header["Token"]; ok {
+	// 	token = headerToken[0]
+	// }
+
+	var showArchived string
+	if headerShowArchived, ok := header["Show-Archived"]; ok {
+		showArchived = headerShowArchived[0]
+	}
+
 	switch r.Method {
 	case "GET":
-		query := `
-        SELECT id,
-               title,
-               date_created,
-               date_updated,
-               short_title,
-               content,
-               author,
-               image,
-							 archived
-        FROM posts
-				WHERE NOT archived
-      `
+		var query string
+		if showArchived == os.Getenv("SHOW_ARCHIVED") {
+			query = `
+					SELECT id,
+								 title,
+								 date_created,
+								 date_updated,
+								 short_title,
+								 content,
+								 author,
+								 image,
+								 archived
+					FROM posts
+				`
+		} else {
+			query = `
+					SELECT id,
+								 title,
+								 date_created,
+								 date_updated,
+								 short_title,
+								 content,
+								 author,
+								 image,
+								 archived
+					FROM posts
+					WHERE NOT archived
+				`
+		}
 
 		var err error
 		rows, err = DB.Query(query)
