@@ -28,6 +28,7 @@ type Post struct {
 	Content     string
 	Author      uint
 	Image       uint
+	Archived 		bool
 }
 
 type Author struct {
@@ -37,6 +38,7 @@ type Author struct {
 	DateUpdated time.Time
 	Bio         string
 	Image       uint
+	Archived		bool
 }
 
 // *****************************************************************************
@@ -54,6 +56,9 @@ type Author struct {
 //   image INTEGER
 // );
 
+// ALTER TABLE posts
+// ADD archived BOOL DEFAULT false;
+
 // CREATE TABLE authors (
 //   id SERIAL PRIMARY KEY,
 //   name VARCHAR NOT NULL,
@@ -62,6 +67,9 @@ type Author struct {
 //   bio VARCHAR,
 //   image INTEGER
 // );
+
+// ALTER TABLE authors
+// ADD archived BOOL DEFAULT false;
 
 // CREATE TABLE images (
 //   id SERIAL PRIMARY KEY,
@@ -72,6 +80,9 @@ type Author struct {
 //   description VARCHAR,
 //   link VARCHAR
 // );
+
+// ALTER TABLE images
+// ADD archived BOOL DEFAULT false;
 
 // *****************************************************************************
 // ****** DATABASE *************************************************************
@@ -123,6 +134,7 @@ func Start() {
 	mux.Handle("/", root)
 	mux.Handle("/posts/", Posts)
 	mux.Handle("/authors/", Authors)
+	// mux.Handle("/"+os.Getenv("ONE_TIME"), OneTime)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -147,6 +159,39 @@ func newNullString(s string) sql.NullString {
 	}
 }
 
+var OneTime = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+  alterAuthorsTable := `
+    alter table authors
+		add archived bool default false;
+  `
+
+  alterPostsTable := `
+    alter table posts
+		add archived bool default false;
+  `
+
+  alterImagesTable := `
+    alter table images
+		add archived bool default false;
+  `
+
+  var err error
+  _, err = DB.Query(alterAuthorsTable)
+  if err != nil {
+    panic(err)
+  }
+
+  _, err = DB.Query(alterPostsTable)
+  if err != nil {
+    panic(err)
+  }
+
+  _, err = DB.Query(alterImagesTable)
+  if err != nil {
+    panic(err)
+  }
+})
+
 // *****************************************************************************
 // ****** AUTHORS **************************************************************
 // *****************************************************************************
@@ -167,8 +212,10 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
                date_created,
                date_updated,
                bio,
-               image
+               image,
+							 archived
         FROM authors
+				WHERE NOT archived
       `
 
 		var err error
@@ -205,7 +252,8 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
           date_created,
           date_updated,
           bio,
-          image
+          image,
+					archived
       `
 
 		rows, err = DB.Query(query,
@@ -241,20 +289,23 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					image = CASE
 						WHEN $3 = 0 THEN image
 						ELSE $3
-					END
-				WHERE id = $4 RETURNING
+					END,
+					archived = COALESCE($4, archived)
+				WHERE id = $5 RETURNING
 					id,
 					name,
 					date_created,
 					date_updated,
 					bio,
-					image
+					image,
+					archived
 			`
 
 		rows, err = DB.Query(query,
 			newNullString(author.Name),
 			newNullString(author.Bio),
 			author.Image,
+			author.Archived,
 			paramAuthorId,
 		)
 		if err != nil {
@@ -270,6 +321,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var DateUpdated time.Time
 		var Bio string
 		var Image uint
+		var Archived bool
 
 		rows.Scan(
 			&Id,
@@ -278,6 +330,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			&DateUpdated,
 			&Bio,
 			&Image,
+			&Archived,
 		)
 
 		authors = append(authors, Author{
@@ -287,6 +340,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			DateUpdated: DateUpdated,
 			Bio:         Bio,
 			Image:       Image,
+			Archived:		 Archived,
 		})
 	}
 
@@ -316,8 +370,10 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
                short_title,
                content,
                author,
-               image
+               image,
+							 archived
         FROM posts
+				WHERE NOT archived
       `
 
 		var err error
@@ -360,7 +416,8 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
           short_title,
           content,
           author,
-          image
+          image,
+					archived
       `
 
 		rows, err = DB.Query(query,
@@ -403,8 +460,9 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					image = CASE
 						WHEN $5 = 0 THEN image
 						ELSE $5
-					END
-				WHERE id = $6 RETURNING
+					END,
+					archived = COALESCE($6, archived)
+				WHERE id = $7 RETURNING
 					id,
 					title,
 					date_created,
@@ -412,7 +470,8 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					short_title,
 					content,
 					author,
-					image
+					image,
+					archived
 			`
 
 		rows, err = DB.Query(query,
@@ -421,6 +480,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			newNullString(post.Content),
 			post.Author,
 			post.Image,
+			post.Archived,
 			paramPostId,
 		)
 		if err != nil {
@@ -438,6 +498,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var Content string
 		var Author uint
 		var Image uint
+		var Archived bool
 
 		rows.Scan(
 			&Id,
@@ -448,6 +509,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			&Content,
 			&Author,
 			&Image,
+			&Archived,
 		)
 
 		posts = append(posts, Post{
@@ -459,6 +521,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Content:     Content,
 			Author:      Author,
 			Image:       Image,
+			Archived:		 Archived,
 		})
 	}
 
