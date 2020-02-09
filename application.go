@@ -134,7 +134,6 @@ func Start() {
 	mux.Handle("/", root)
 	mux.Handle("/posts/", Posts)
 	mux.Handle("/authors/", Authors)
-	mux.Handle("/"+os.Getenv("ONE_TIME"), OneTime)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -158,39 +157,6 @@ func newNullString(s string) sql.NullString {
 		Valid:  true,
 	}
 }
-
-var OneTime = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-  alterAuthorsTable := `
-    alter table authors
-		add archived bool default false;
-  `
-
-  alterPostsTable := `
-    alter table posts
-		add archived bool default false;
-  `
-
-  alterImagesTable := `
-    alter table images
-		add archived bool default false;
-  `
-
-  var err error
-  _, err = DB.Query(alterAuthorsTable)
-  if err != nil {
-    panic(err)
-  }
-
-  _, err = DB.Query(alterPostsTable)
-  if err != nil {
-    panic(err)
-  }
-
-  _, err = DB.Query(alterImagesTable)
-  if err != nil {
-    panic(err)
-  }
-})
 
 // *****************************************************************************
 // ****** AUTHORS **************************************************************
