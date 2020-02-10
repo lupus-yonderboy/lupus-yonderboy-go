@@ -28,7 +28,7 @@ type Post struct {
 	Content     string
 	Author      uint
 	Image       uint
-	Archived 		bool
+	Archived    bool
 }
 
 type Author struct {
@@ -38,7 +38,7 @@ type Author struct {
 	DateUpdated time.Time
 	Bio         string
 	Image       uint
-	Archived		bool
+	Archived    bool
 }
 
 // *****************************************************************************
@@ -173,7 +173,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	header := r.Header
 	var token string
 	if headerToken, ok := header["Token"]; ok {
-    token = headerToken[0]
+		token = headerToken[0]
 	}
 
 	var showArchived string
@@ -218,7 +218,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		if token != os.Getenv("TOKEN") {
 			w.WriteHeader(http.StatusUnauthorized)
-			return;
+			return
 		}
 
 		author := &Author{}
@@ -265,7 +265,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		if token != os.Getenv("TOKEN") {
 			w.WriteHeader(http.StatusUnauthorized)
-			return;
+			return
 		}
 
 		if paramAuthorId == "" {
@@ -341,7 +341,7 @@ var Authors = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			DateUpdated: DateUpdated,
 			Bio:         Bio,
 			Image:       Image,
-			Archived:		 Archived,
+			Archived:    Archived,
 		})
 	}
 
@@ -413,7 +413,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		if token != os.Getenv("TOKEN") {
 			w.WriteHeader(http.StatusUnauthorized)
-			return;
+			return
 		}
 
 		post := &Post{}
@@ -468,7 +468,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		if token != os.Getenv("TOKEN") {
 			w.WriteHeader(http.StatusUnauthorized)
-			return;
+			return
 		}
 
 		if paramPostId == "" {
@@ -559,7 +559,7 @@ var Posts = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			Content:     Content,
 			Author:      Author,
 			Image:       Image,
-			Archived:		 Archived,
+			Archived:    Archived,
 		})
 	}
 
