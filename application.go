@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	// "strconv"
 	"strings"
 	"time"
 
@@ -92,14 +92,14 @@ var DB *sql.DB
 
 var (
 	host      = os.Getenv("RDS_HOSTNAME")
-	dbPort, _ = strconv.ParseUint(os.Getenv("RDS_PORT"), 10, 64)
-	dbname    = os.Getenv("RDS_DB_NAME")
+	// dbPort, _ = strconv.ParseUint(os.Getenv("RDS_PORT"), 10, 64)
+	// dbname    = os.Getenv("RDS_DB_NAME")
 	user      = os.Getenv("RDS_USERNAME")
 	password  = os.Getenv("RDS_PASSWORD")
 )
 
 func Connect() {
-	info := fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=disable", host, dbPort, dbname, user, password)
+	info := fmt.Sprintf("postgres://%s:%s@%s?sslmode=disable", user, password, host)
 
 	var err error
 	DB, err = sql.Open("postgres", info)
